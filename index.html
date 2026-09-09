@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>PR Dating Map</title>
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+    }
+
+    header {
+      height: 60px;
+      background: #181818;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      position: relative;
+      z-index: 1000;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    #profileButton {
+      background: #ff4f81;
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #map {
+      width: 100%;
+      height: calc(100vh - 60px);
+    }
+
+    .profile-marker {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 3px solid white;
+      object-fit: cover;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    .popup {
+      text-align: center;
+      color: #222;
+    }
+
+    .popup img {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 5px;
+    }
+
+    .popup h3 {
+      margin: 3px 0;
+    }
+
+    .popup button {
+      background: #ff4f81;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 15px;
+      cursor: pointer;
+    }
+
+    #profilePanel {
+      display: none;
+      position: fixed;
+      top: 70px;
+      right: 15px;
+      width: 280px;
+      background: #222;
+      padding: 20px;
+      border-radius: 15px;
+      z-index: 2000;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+    }
+
+    #profilePanel h2 {
+      margin-top: 0;
+    }
+
+    #profilePanel input,
+    #profilePanel textarea {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+    }
+
+    #profilePanel button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #ff4f81;
+      color: white;
+      font-weight: bold;
+    }
+
+    #closeProfile {
+      background: #555 !important;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>🇵🇷 PR Dating Map</h1>
+    <button id="profileButton">Mi perfil</button>
+  </header>
+
+  <div id="map"></div>
+
+  <!-- Panel de perfil -->
+  <div id="profilePanel">
+
+    <h2>Crear perfil</h2>
+
+    <input
+      type="text"
+      id="name"
+      placeholder="Tu nombre"
+    >
+
+    <input
+      type="number"
+      id="age"
+      placeholder="Edad"
+    >
+
+    <textarea
+      id="description"
+      placeholder="Escribe algo sobre ti..."
+    ></textarea>
+
+    <button onclick="saveProfile()">
+      Guardar perfil
+    </button>
+
+    <button id="closeProfile" onclick="closeProfile()">
+      Cerrar
+    </button>
+
+  </div>
+
+  <!-- Leaflet -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script>
+
+    // Crear mapa centrado en Puerto Rico
+    const map = L.map('map').setView(
+      [18.2208, -66.5901],
+      9
+    );
+
+    // Mapa base
+    L.tileLayer(
+      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      {
+        attribution: '&copy; OpenStreetMap contributors'
+      }
+    ).addTo(map);
+
+
+    // ==========================
+    // PERFILES DE EJEMPLO
+    // ==========================
+
+    const profiles = [
+
+      {
+        name: "Ana",
+        age: 29,
+        lat: 18.4655,
+        lng: -66.1057,
+        photo: "https://i.pravatar.cc/150?img=47"
+      },
+
+      {
+        name: "Carla",
+        age: 32,
+        lat: 18.245,
+        lng: -67.145,
+        photo: "https://i.pravatar.cc/150?img=44"
+      },
+
+      {
+        name: "Laura",
+        age: 27,
+        lat: 18.0107,
+        lng: -66.6141,
+        photo: "https://i.pravatar.cc/150?img=45"
+      },
+
+      {
+        name: "Sofia",
+        age: 35,
+        lat: 18.4041,
+        lng: -66.0388,
+        photo: "https://i.pravatar.cc/150?img=48"
+      }
+
+    ];
+
+
+    // Crear los marcadores
+    profiles.forEach(profile => {
+
+      const icon = L.divIcon({
+
+        className: "",
+
+        html:
+          `<img
+            class="profile-marker"
+            src="${profile.photo}"
+          >`,
+
+        iconSize: [48, 48],
+        iconAnchor: [24, 24]
+
+      });
+
+
+      const marker = L.marker(
+        [profile.lat, profile.lng],
+        { icon: icon }
+      ).addTo(map);
+
+
+      marker.bindPopup(`
+
+        <div class="popup">
+
+          <img src="${profile.photo}">
+
+          <h3>
+            ${profile.name}, ${profile.age}
+          </h3>
+
+          <button onclick="alert('Chat próximamente')">
+            💬 Chat
+          </button>
+
+        </div>
+
+      `);
+
+    });
+
+
+    // ==========================
+    // PANEL DE PERFIL
+    // ==========================
+
+    document
+      .getElementById("profileButton")
+      .onclick = function() {
+
+        document
+          .getElementById("profilePanel")
+          .style.display = "block";
+
+      };
+
+
+    function closeProfile() {
+
+      document
+        .getElementById("profilePanel")
+        .style.display = "none";
+
+    }
+
+
+    function saveProfile() {
+
+      const name =
+        document.getElementById("name").value;
+
+      const age =
+        document.getElementById("age").value;
+
+      if (!name || !age) {
+
+        alert("Escribe tu nombre y edad.");
+
+        return;
+
+      }
+
+      alert(
+        "Perfil creado: " +
+        name +
+        ", " +
+        age +
+        " años"
+      );
+
+      closeProfile();
+
+    }
+
+  </script>
+
+</body>
+</html>
