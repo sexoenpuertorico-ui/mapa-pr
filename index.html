@@ -6,7 +6,6 @@
 
   <title>Sexo Puerto Rico</title>
 
-  <!-- Leaflet -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -26,7 +25,7 @@
 
     header {
       height: 60px;
-      background: #181818;
+      background: #000;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -35,19 +34,22 @@
       z-index: 1000;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 20px;
+    .logo {
+      font-size: 22px;
+      font-weight: bold;
     }
 
-    #profileButton {
-      background: #ff4f81;
-      color: white;
+    button {
       border: none;
-      padding: 10px 14px;
-      border-radius: 20px;
-      font-weight: bold;
+      border-radius: 8px;
+      padding: 10px 15px;
+      font-size: 14px;
       cursor: pointer;
+    }
+
+    .login-btn {
+      background: white;
+      color: black;
     }
 
     #map {
@@ -59,76 +61,106 @@
       width: 48px;
       height: 48px;
       border-radius: 50%;
+      overflow: hidden;
       border: 3px solid white;
+      background: #333;
+      box-shadow: 0 2px 8px rgba(0,0,0,.6);
+    }
+
+    .profile-marker img {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
     }
 
-    .popup {
+    .profile-box {
       text-align: center;
-      color: #222;
+      color: #111;
+      min-width: 160px;
     }
 
-    .popup img {
+    .profile-box img {
       width: 70px;
       height: 70px;
-      border-radius: 50%;
       object-fit: cover;
+      border-radius: 50%;
       margin-bottom: 5px;
     }
 
-    .popup h3 {
-      margin: 3px 0;
+    .profile-box h3 {
+      margin: 5px 0;
     }
 
-    .popup button {
-      background: #ff4f81;
+    .chat-btn {
+      background: #111;
       color: white;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 15px;
-      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
     }
 
-    #profilePanel {
+    .modal {
       display: none;
       position: fixed;
-      top: 70px;
-      right: 15px;
-      width: 280px;
-      background: #222;
-      padding: 20px;
-      border-radius: 15px;
+      inset: 0;
+      background: rgba(0,0,0,.75);
       z-index: 2000;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
 
-    #profilePanel h2 {
+    .modal-content {
+      width: 100%;
+      max-width: 400px;
+      background: #1b1b1b;
+      padding: 25px;
+      border-radius: 15px;
+    }
+
+    .modal-content h2 {
       margin-top: 0;
     }
 
-    #profilePanel input,
-    #profilePanel textarea {
+    input {
       width: 100%;
-      margin-bottom: 10px;
-      padding: 10px;
+      padding: 13px;
+      margin: 7px 0;
       border-radius: 8px;
-      border: none;
-    }
-
-    #profilePanel button {
-      width: 100%;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      background: #ff4f81;
+      border: 1px solid #555;
+      background: #292929;
       color: white;
-      font-weight: bold;
     }
 
-    #closeProfile {
-      background: #555 !important;
+    .primary {
+      width: 100%;
+      background: white;
+      color: black;
+      margin-top: 10px;
+    }
+
+    .close {
+      background: #444;
+      color: white;
+      width: 100%;
       margin-top: 8px;
+    }
+
+    .privacy {
+      font-size: 12px;
+      color: #aaa;
+      line-height: 1.4;
+      margin-top: 15px;
+    }
+
+    .switch {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .switch span {
+      text-decoration: underline;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -136,204 +168,98 @@
 <body>
 
   <header>
-    <h1>Sexo Puerto Rico</h1>
-    <button id="profileButton">Mi perfil</button>
+    <div class="logo">Sexo Puerto Rico</div>
+    <button class="login-btn" onclick="openLogin()">Iniciar sesión</button>
   </header>
 
   <div id="map"></div>
 
-  <!-- Panel de perfil -->
-  <div id="profilePanel">
+  <!-- LOGIN -->
+  <div class="modal" id="loginModal">
+    <div class="modal-content">
 
-    <h2>Crear perfil</h2>
+      <h2>Iniciar sesión</h2>
 
-    <input
-      type="text"
-      id="name"
-      placeholder="Tu nombre"
-    >
+      <input
+        type="text"
+        id="loginContact"
+        placeholder="Email o número de teléfono"
+      >
 
-    <input
-      type="number"
-      id="age"
-      placeholder="Edad"
-    >
+      <input
+        type="password"
+        id="loginPassword"
+        placeholder="Contraseña"
+      >
 
-    <textarea
-      id="description"
-      placeholder="Escribe algo sobre ti..."
-    ></textarea>
+      <button class="primary" onclick="login()">
+        Entrar
+      </button>
 
-    <button onclick="saveProfile()">
-      Guardar perfil
-    </button>
+      <div class="switch">
+        ¿No tienes cuenta?
+        <span onclick="openRegister()">Crear cuenta</span>
+      </div>
 
-    <button id="closeProfile" onclick="closeProfile()">
-      Cerrar
-    </button>
+      <div class="privacy">
+        🔒 Tu información de acceso debe mantenerse privada.
+      </div>
 
+      <button class="close" onclick="closeModals()">
+        Cerrar
+      </button>
+
+    </div>
   </div>
 
-  <!-- Leaflet -->
+  <!-- REGISTRO -->
+  <div class="modal" id="registerModal">
+    <div class="modal-content">
+
+      <h2>Crear perfil</h2>
+
+      <input
+        type="text"
+        id="name"
+        placeholder="Nombre o apodo"
+      >
+
+      <input
+        type="text"
+        id="registerContact"
+        placeholder="Email o número de teléfono"
+      >
+
+      <input
+        type="password"
+        id="registerPassword"
+        placeholder="Contraseña"
+      >
+
+      <button class="primary" onclick="register()">
+        Crear cuenta
+      </button>
+
+      <div class="privacy">
+        🔒 Tu información personal no se mostrará públicamente.
+        El contacto utilizado para crear la cuenta se utilizará
+        únicamente para iniciar sesión.
+      </div>
+
+      <div class="switch">
+        ¿Ya tienes cuenta?
+        <span onclick="openLogin()">Iniciar sesión</span>
+      </div>
+
+      <button class="close" onclick="closeModals()">
+        Cerrar
+      </button>
+
+    </div>
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
 
-    // Crear mapa centrado en Puerto Rico
-    const map = L.map('map').setView(
-      [18.2208, -66.5901],
-      9
-    );
-
-    // Mapa base
-    L.tileLayer(
-      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      {
-        attribution: '&copy; OpenStreetMap contributors'
-      }
-    ).addTo(map);
-
-
-    // ==========================
-    // PERFILES DE EJEMPLO
-    // ==========================
-
-    const profiles = [
-
-      {
-        name: "Ana",
-        age: 29,
-        lat: 18.4655,
-        lng: -66.1057,
-        photo: "https://i.pravatar.cc/150?img=47"
-      },
-
-      {
-        name: "Carla",
-        age: 32,
-        lat: 18.245,
-        lng: -67.145,
-        photo: "https://i.pravatar.cc/150?img=44"
-      },
-
-      {
-        name: "Laura",
-        age: 27,
-        lat: 18.0107,
-        lng: -66.6141,
-        photo: "https://i.pravatar.cc/150?img=45"
-      },
-
-      {
-        name: "Sofia",
-        age: 35,
-        lat: 18.4041,
-        lng: -66.0388,
-        photo: "https://i.pravatar.cc/150?img=48"
-      }
-
-    ];
-
-
-    // Crear los marcadores
-    profiles.forEach(profile => {
-
-      const icon = L.divIcon({
-
-        className: "",
-
-        html:
-          `<img
-            class="profile-marker"
-            src="${profile.photo}"
-          >`,
-
-        iconSize: [48, 48],
-        iconAnchor: [24, 24]
-
-      });
-
-
-      const marker = L.marker(
-        [profile.lat, profile.lng],
-        { icon: icon }
-      ).addTo(map);
-
-
-      marker.bindPopup(`
-
-        <div class="popup">
-
-          <img src="${profile.photo}">
-
-          <h3>
-            ${profile.name}, ${profile.age}
-          </h3>
-
-          <button onclick="alert('Chat próximamente')">
-            💬 Chat
-          </button>
-
-        </div>
-
-      `);
-
-    });
-
-
-    // ==========================
-    // PANEL DE PERFIL
-    // ==========================
-
-    document
-      .getElementById("profileButton")
-      .onclick = function() {
-
-        document
-          .getElementById("profilePanel")
-          .style.display = "block";
-
-      };
-
-
-    function closeProfile() {
-
-      document
-        .getElementById("profilePanel")
-        .style.display = "none";
-
-    }
-
-
-    function saveProfile() {
-
-      const name =
-        document.getElementById("name").value;
-
-      const age =
-        document.getElementById("age").value;
-
-      if (!name || !age) {
-
-        alert("Escribe tu nombre y edad.");
-
-        return;
-
-      }
-
-      alert(
-        "Perfil creado: " +
-        name +
-        ", " +
-        age +
-        " años"
-      );
-
-      closeProfile();
-
-    }
-
-  </script>
-
-</body>
-</html>
+    // MAPA DE PUER
